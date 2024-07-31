@@ -102,14 +102,16 @@ function createBaseStructure() {
       { listen: "test", script: { type: "text/javascript", exec: [""] } },
     ],
     variable: [
-      { key: "localUrl", value: "localhost:7979" },
+      { key: "localUrl", value: "localhost:7979", type: "string" },
       {
         key: "remoteUrl",
         value: "https://fm-api.developteam.net",
         type: "string",
       },
-      { key: "privateKey", value: "", type: "string" },
+      { key: "clientId", value: "abc_client", type: "string" },
+      { key: "clientSecret", value: "abc123", type: "string" },
       { key: "accessToken", value: "", type: "string" },
+      { key: "privateKey", value: "", type: "string" },
     ],
     item: [
       { name: "local", item: [] },
@@ -136,8 +138,8 @@ function addRequestTokenItem(baseItem, urlKey) {
       auth: {
         type: "basic",
         basic: [
-          { key: "username", value: "abc_client", type: "string" },
-          { key: "password", value: "abc123", type: "string" },
+          { key: "username", value: "{{clientId}}", type: "string" },
+          { key: "password", value: "{{clientSecret}}", type: "string" },
         ],
       },
       method: "POST",
