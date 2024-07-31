@@ -1,3 +1,8 @@
+const privateKey =
+  "MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAjoTUdecisi/VZykOGl/TquaNgD0M0OPV4R2YHAUrDA7M5syXP510hLMNO44p8P+aqMzekGLJyEd7SzRETHGoqQIDAQABAkAhe5mCvbPMEyra2q1iiuLqwtG5sB4jsXNdORu0cY5kfXRwHEK/1RIW3m+8vnLa766OOUM848mHnK8wvVrMDW+lAiEAkLFj3MXB0f6tOpZlmT/KwvuR1Hwt7ylvJkTetqnaf68CIQD8J0xQ3LkJQqjadOepXBX5rf+bsTpRMeMkiNPSz8tbJwIgSRSfmKl1fKgCPJ4r0Jxsv9CqVkUmOi6WSiDs0Bu4FVcCIQDzQRYmjEkV3fD3jwBOKkAo9us4T+lqmy39+OIg5cXQ0QIhAIwqv/PvWUp3XvSBLoc0G00r0hGDJLwoiS0FpBTerHx7";
+const remoteUrl = "https://fm-api.developteam.net";
+const localUrl = "localhost:7979";
+
 function convertJson() {
   const inputJson = document.getElementById("inputJson").value;
   try {
@@ -114,16 +119,16 @@ function createBaseStructure() {
       { listen: "test", script: { type: "text/javascript", exec: [""] } },
     ],
     variable: [
-      { key: "localUrl", value: "localhost:7979", type: "string" },
+      { key: "localUrl", value: `${localUrl}`, type: "string" },
       {
         key: "remoteUrl",
-        value: "https://fm-api.developteam.net",
+        value: `${remoteUrl}`,
         type: "string",
       },
       { key: "clientId", value: "abc_client", type: "string" },
       { key: "clientSecret", value: "abc123", type: "string" },
       { key: "accessToken", value: "", type: "string" },
-      { key: "privateKey", value: "", type: "string" },
+      { key: "privateKey", value: `${privateKey}`, type: "string" },
     ],
     item: [
       { name: "local", item: [] },
