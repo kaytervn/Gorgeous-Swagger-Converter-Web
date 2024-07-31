@@ -3,14 +3,42 @@ function convertJson() {
   try {
     const parsedJson = JSON.parse(inputJson);
     const convertedJson = transformJson(parsedJson);
-    document.getElementById("outputJson").value = JSON.stringify(
-      convertedJson,
-      null,
-      2
-    );
+    const outputElement = document.getElementById("outputJson");
+    outputElement.textContent = JSON.stringify(convertedJson, null, 2);
+    hljs.highlightElement(outputElement);
+    document.getElementById("outputBlock").style.display = "block";
   } catch (error) {
     alert("Invalid JSON input: " + error.message);
   }
+}
+
+function copyOutput() {
+  var outputText = document.getElementById("outputJson").textContent;
+  var copyButton = document.getElementById("copyButton");
+  var copyIcon = document.getElementById("copyIcon");
+  var copyText = document.getElementById("copyText");
+  navigator.clipboard
+    .writeText(outputText)
+    .then(() => {
+      copyButton.classList.remove("btn-secondary");
+      copyButton.classList.add("btn-success");
+
+      copyIcon.classList.remove("fa-copy");
+      copyIcon.classList.add("fa-check");
+      copyText.textContent = "Copied";
+
+      setTimeout(() => {
+        copyButton.classList.remove("btn-success");
+        copyButton.classList.add("btn-secondary");
+
+        copyIcon.classList.remove("fa-check");
+        copyIcon.classList.add("fa-copy");
+        copyText.textContent = "Copy";
+      }, 1500);
+    })
+    .catch((err) => {
+      console.error("Không thể sao chép văn bản: ", err);
+    });
 }
 
 function transformJson(json) {

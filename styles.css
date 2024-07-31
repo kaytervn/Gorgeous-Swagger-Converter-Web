@@ -1,0 +1,46 @@
+body {
+  background-color: #f0f2f5;
+}
+.container {
+  max-width: 800px;
+}
+.card {
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.btn-primary {
+  background-color: #4e73df;
+  border-color: #4e73df;
+}
+.btn-primary:hover {
+  background-color: #2e59d9;
+  border-color: #2e59d9;
+}
+#outputContainer {
+  height: 300px;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background-color: #282c34;
+}
+#outputContainer::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+#outputJson {
+  white-space: pre;
+  font-family: "Consolas", "Monaco", "Andale Mono", "Ubuntu Mono", monospace;
+  padding: 15px;
+  min-height: 100%;
+}
+.hljs-punctuation {
+  color: #56b6c2 !important;
+}
+.hljs-attr {
+  color: #e06c75 !important;
+}
+.hljs-string {
+  color: #98c379 !important;
+}
