@@ -215,15 +215,28 @@ function addBodyParams(json, request, parameters) {
   const bodyParam = parameters.find((p) => p.in === "body");
   if (bodyParam) {
     request.header.push({ key: "Content-Type", value: "application/json" });
+    const schemaName = bodyParam.schema.$ref.split("/").pop();
     request.body = {
       mode: "raw",
       raw: JSON.stringify(
-        generateRequestBody(
-          json.definitions[bodyParam.schema.$ref.split("/").pop()].properties
-        ),
+        generateRequestBody(json.definitions[schemaName].properties),
         null,
         2
       ),
+      options: { raw: { language: "json" } },
+    };
+  }
+  const formDataParams = parameters.filter((p) => p.in === "formData");
+  if (formDataParams.length > 0) {
+    request.header.push({ key: "Content-Type", value: "multipart/form-data" });
+
+    const formdata = formDataParams.map((param) => ({
+      key: param.name,
+      type: (param.schema?.type ?? param.type) === "file" ? "file" : "text",
+    }));
+    request.body = {
+      mode: "formdata",
+      formdata: formdata,
       options: { raw: { language: "json" } },
     };
   }
