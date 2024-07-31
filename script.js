@@ -85,10 +85,22 @@ function addControllerItems(json, baseItem, urlKey) {
   }
 }
 
+function getCurrentDate() {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = now.getFullYear();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+}
+
 function createBaseStructure() {
   return {
     info: {
-      name: "API Documentation",
+      name: `API [${getCurrentDate()}]`,
       description: "API Documentation",
       schema:
         "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -243,7 +255,8 @@ function addBodyParams(json, request, parameters) {
 }
 
 function generateRequestBody(properties) {
-  return Object.fromEntries(
-    Object.entries(properties).map(([key, value]) => [key, `<${value.type}>`])
-  );
+  return Object.entries(properties).reduce((acc, [key, value]) => {
+    acc[key] = key === "privateKey" ? "{{privateKey}}" : `<${value.type}>`;
+    return acc;
+  }, {});
 }
