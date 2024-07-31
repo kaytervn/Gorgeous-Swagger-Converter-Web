@@ -8,8 +8,22 @@ function convertJson() {
     hljs.highlightElement(outputElement);
     document.getElementById("outputBlock").style.display = "block";
   } catch (error) {
-    alert("Invalid JSON input: " + error.message);
+    showFloatingAlert(error.message);
   }
+}
+
+function showFloatingAlert(message) {
+  const alertElement = document.getElementById("floatingAlert");
+  const messageElement = document.getElementById("alertMessage");
+  const closeButton = document.getElementById("closeAlert");
+  messageElement.textContent = message;
+  alertElement.style.display = "block";
+  closeButton.onclick = function () {
+    alertElement.style.display = "none";
+  };
+  setTimeout(() => {
+    alertElement.style.display = "none";
+  }, 5000);
 }
 
 function copyOutput() {
