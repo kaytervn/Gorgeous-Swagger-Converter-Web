@@ -28,16 +28,64 @@
           <h1 class="card-title text-center mb-4 fw-light">
             Gorgeous Swagger Converter
           </h1>
-          <div class="mb-3">
-            <label for="inputJson" class="form-label fw-bold">Input JSON</label>
-            <textarea
-              class="form-control"
-              id="inputJson"
-              rows="5"
-              style="resize: none"
-              placeholder="Paste your JSON here..."
-            ></textarea>
-          </div>
+          <form class="row g-3">
+            <div class="col-md-12">
+              <label for="inputName" class="form-label">Collection Name</label>
+              <input
+                type="text"
+                placeholder="Enter your collection name..."
+                class="form-control"
+                id="inputName"
+              />
+            </div>
+            <div class="col-md-6">
+              <label for="inputLocalUrl" class="form-label">Local URL</label>
+              <div class="input-group">
+                <span class="input-group-text">localhost:</span>
+                <input
+                  type="text"
+                  placeholder="Port..."
+                  class="form-control"
+                  id="inputLocalUrl"
+                  aria-describedby="basic-addon3 basic-addon4"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="inputRemoteUrl" class="form-label">Remote URL</label>
+              <div class="input-group">
+                <span class="input-group-text">https://</span>
+                <input
+                  type="text"
+                  placeholder="Remote URL..."
+                  class="form-control"
+                  id="inputRemoteUrl"
+                  aria-describedby="basic-addon3 basic-addon4"
+                />
+              </div>
+            </div>
+            <div class="col-md-12">
+              <label for="inputPrivateKey" class="form-label"
+                >Private Key</label
+              >
+              <input
+                type="password"
+                placeholder="Enter your server private key..."
+                class="form-control"
+                id="inputPrivateKey"
+              />
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="inputJson" class="form-label">Input JSON</label>
+              <textarea
+                class="form-control"
+                id="inputJson"
+                rows="5"
+                style="resize: none"
+                placeholder="Paste your JSON here..."
+              ></textarea>
+            </div>
+          </form>
           <div class="d-grid gap-2 mb-3">
             <button onclick="convertJson()" class="btn btn-primary">
               <i class="fas fa-exchange-alt me-2"></i> Convert
@@ -45,9 +93,7 @@
           </div>
           <div id="outputBlock" style="display: none">
             <div class="mb-3">
-              <label for="outputJson" class="form-label fw-bold"
-                >Output JSON</label
-              >
+              <label for="outputJson" class="form-label">Output JSON</label>
               <div id="outputContainer">
                 <pre><code id="outputJson" class="json"></code></pre>
               </div>

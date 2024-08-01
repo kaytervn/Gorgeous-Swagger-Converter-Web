@@ -1,63 +1,63 @@
-const privateKey =
-  "MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAjoTUdecisi/VZykOGl/TquaNgD0M0OPV4R2YHAUrDA7M5syXP510hLMNO44p8P+aqMzekGLJyEd7SzRETHGoqQIDAQABAkAhe5mCvbPMEyra2q1iiuLqwtG5sB4jsXNdORu0cY5kfXRwHEK/1RIW3m+8vnLa766OOUM848mHnK8wvVrMDW+lAiEAkLFj3MXB0f6tOpZlmT/KwvuR1Hwt7ylvJkTetqnaf68CIQD8J0xQ3LkJQqjadOepXBX5rf+bsTpRMeMkiNPSz8tbJwIgSRSfmKl1fKgCPJ4r0Jxsv9CqVkUmOi6WSiDs0Bu4FVcCIQDzQRYmjEkV3fD3jwBOKkAo9us4T+lqmy39+OIg5cXQ0QIhAIwqv/PvWUp3XvSBLoc0G00r0hGDJLwoiS0FpBTerHx7";
-const remoteUrl = "https://fm-api.developteam.net";
-const localUrl = "localhost:7979";
+const inputJsonElement = document.getElementById("inputJson");
+const outputJsonElement = document.getElementById("outputJson");
+const outputBlockElement = document.getElementById("outputBlock");
+const floatingAlertElement = document.getElementById("floatingAlert");
+const alertMessageElement = document.getElementById("alertMessage");
+const closeAlertButton = document.getElementById("closeAlert");
+const copyButton = document.getElementById("copyButton");
+const copyIcon = document.getElementById("copyIcon");
+const copyText = document.getElementById("copyText");
+const inputNameElement = document.getElementById("inputName");
+const inputLocalUrlElement = document.getElementById("inputLocalUrl");
+const inputRemoteUrlElement = document.getElementById("inputRemoteUrl");
+const inputPrivateKeyElement = document.getElementById("inputPrivateKey");
 
 function convertJson() {
-  const inputJson = document.getElementById("inputJson").value;
+  const inputJson = inputJsonElement.value;
   try {
     const parsedJson = JSON.parse(inputJson);
     const convertedJson = transformJson(parsedJson);
-    const outputElement = document.getElementById("outputJson");
-    outputElement.textContent = JSON.stringify(convertedJson, null, 2);
-    hljs.highlightElement(outputElement);
-    document.getElementById("outputBlock").style.display = "block";
+    outputJsonElement.textContent = JSON.stringify(convertedJson, null, 2);
+    hljs.highlightElement(outputJsonElement);
+    outputBlockElement.style.display = "block";
+    localStorage.setItem("collectionName", inputNameElement.value);
+    localStorage.setItem("localUrl", inputLocalUrlElement.value);
+    localStorage.setItem("remoteUrl", inputRemoteUrlElement.value);
+    localStorage.setItem("privateKey", inputPrivateKeyElement.value);
   } catch (error) {
     showFloatingAlert(error.message);
   }
 }
 
 function showFloatingAlert(message) {
-  const alertElement = document.getElementById("floatingAlert");
-  const messageElement = document.getElementById("alertMessage");
-  const closeButton = document.getElementById("closeAlert");
-  messageElement.textContent = message;
-  alertElement.style.display = "block";
-  closeButton.onclick = function () {
-    alertElement.style.display = "none";
-  };
+  alertMessageElement.textContent = message;
+  floatingAlertElement.style.display = "block";
   setTimeout(() => {
-    alertElement.style.display = "none";
+    floatingAlertElement.style.display = "none";
   }, 5000);
 }
 
+closeAlertButton.onclick = () => {
+  floatingAlertElement.style.display = "none";
+};
+
 function copyOutput() {
-  var outputText = document.getElementById("outputJson").textContent;
-  var copyButton = document.getElementById("copyButton");
-  var copyIcon = document.getElementById("copyIcon");
-  var copyText = document.getElementById("copyText");
+  const outputText = outputJsonElement.textContent;
   navigator.clipboard
     .writeText(outputText)
     .then(() => {
-      copyButton.classList.remove("btn-secondary");
-      copyButton.classList.add("btn-success");
-
-      copyIcon.classList.remove("fa-copy");
-      copyIcon.classList.add("fa-check");
-      copyText.textContent = "Copied";
-
-      setTimeout(() => {
-        copyButton.classList.remove("btn-success");
-        copyButton.classList.add("btn-secondary");
-
-        copyIcon.classList.remove("fa-check");
-        copyIcon.classList.add("fa-copy");
-        copyText.textContent = "Copy";
-      }, 1500);
+      updateCopyButton(true);
+      setTimeout(() => updateCopyButton(false), 1500);
     })
-    .catch((err) => {
-      console.error("Không thể sao chép văn bản: ", err);
-    });
+    .catch(console.error);
+}
+
+function updateCopyButton(copied) {
+  copyButton.classList.toggle("btn-secondary", !copied);
+  copyButton.classList.toggle("btn-success", copied);
+  copyIcon.classList.toggle("fa-copy", !copied);
+  copyIcon.classList.toggle("fa-check", copied);
+  copyText.textContent = copied ? "Copied" : "Copy";
 }
 
 function transformJson(json) {
@@ -72,7 +72,6 @@ function transformJson(json) {
 function addControllerItems(json, baseItem, urlKey) {
   addRequestTokenItem(baseItem, urlKey);
   const controllerItems = {};
-
   for (const [path, methods] of Object.entries(json.paths)) {
     for (const [method, operation] of Object.entries(methods)) {
       const controllerName = operation.tags[0].replace("-controller", "");
@@ -80,7 +79,6 @@ function addControllerItems(json, baseItem, urlKey) {
         controllerItems[controllerName] = { name: controllerName, item: [] };
         baseItem.item.push(controllerItems[controllerName]);
       }
-
       const request = createRequest(json, method, path, operation, urlKey);
       controllerItems[controllerName].item.push({
         name: operation.summary,
@@ -92,20 +90,26 @@ function addControllerItems(json, baseItem, urlKey) {
 
 function getCurrentDate() {
   const now = new Date();
-  const day = String(now.getDate()).padStart(2, "0");
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const year = now.getFullYear();
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  const seconds = String(now.getSeconds()).padStart(2, "0");
-
-  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  return now
+    .toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
+    .replace(/\//g, "/");
 }
 
 function createBaseStructure() {
+  const collectionName = inputNameElement.value;
+  const localUrl = inputLocalUrlElement.value;
+  const remoteUrl = inputRemoteUrlElement.value;
+  const privateKey = inputPrivateKeyElement.value;
   return {
     info: {
-      name: `API [${getCurrentDate()}]`,
+      name: `${collectionName} [${getCurrentDate()}]`,
       description: "API Documentation",
       schema:
         "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -119,16 +123,12 @@ function createBaseStructure() {
       { listen: "test", script: { type: "text/javascript", exec: [""] } },
     ],
     variable: [
-      { key: "localUrl", value: `${localUrl}`, type: "string" },
-      {
-        key: "remoteUrl",
-        value: `${remoteUrl}`,
-        type: "string",
-      },
+      { key: "localUrl", value: `localhost:${localUrl}`, type: "string" },
+      { key: "remoteUrl", value: `https://${remoteUrl}`, type: "string" },
       { key: "clientId", value: "abc_client", type: "string" },
       { key: "clientSecret", value: "abc123", type: "string" },
       { key: "accessToken", value: "", type: "string" },
-      { key: "privateKey", value: `${privateKey}`, type: "string" },
+      { key: "privateKey", value: privateKey, type: "string" },
     ],
     item: [
       { name: "local", item: [] },
@@ -193,12 +193,10 @@ function createRequest(json, method, path, operation, urlKey) {
       path: path.split("/").filter(Boolean),
     },
   };
-
   if (operation.parameters) {
     addQueryParams(request, operation.parameters);
     addBodyParams(json, request, operation.parameters);
   }
-
   return request;
 }
 
@@ -246,14 +244,12 @@ function addBodyParams(json, request, parameters) {
   const formDataParams = parameters.filter((p) => p.in === "formData");
   if (formDataParams.length > 0) {
     request.header.push({ key: "Content-Type", value: "multipart/form-data" });
-
-    const formdata = formDataParams.map((param) => ({
-      key: param.name,
-      type: (param.schema?.type ?? param.type) === "file" ? "file" : "text",
-    }));
     request.body = {
       mode: "formdata",
-      formdata: formdata,
+      formdata: formDataParams.map((param) => ({
+        key: param.name,
+        type: (param.schema?.type ?? param.type) === "file" ? "file" : "text",
+      })),
       options: { raw: { language: "json" } },
     };
   }
@@ -265,3 +261,12 @@ function generateRequestBody(properties) {
     return acc;
   }, {});
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  hljs.highlightAll();
+});
+copyButton.addEventListener("click", copyOutput);
+inputNameElement.value = localStorage.getItem("collectionName");
+inputLocalUrlElement.value = localStorage.getItem("localUrl");
+inputRemoteUrlElement.value = localStorage.getItem("remoteUrl");
+inputPrivateKeyElement.value = localStorage.getItem("privateKey");
