@@ -80,10 +80,46 @@ function addControllerItems(json, baseItem, urlKey) {
         baseItem.item.push(controllerItems[controllerName]);
       }
       const request = createRequest(json, method, path, operation, urlKey);
-      controllerItems[controllerName].item.push({
+      const item = {
         name: operation.summary,
         request,
-      });
+      };
+      if (operation.summary === "list") {
+        item.event = [
+          {
+            listen: "test",
+            script: {
+              exec: [
+                "const response = pm.response.json();",
+                "const ids = response.data.content.map(item => item.id);",
+                "pm.variables.set('ids', ids);",
+              ],
+              type: "text/javascript",
+            },
+          },
+        ];
+      }
+      if (operation.summary === "delete") {
+        item.event = [
+          {
+            listen: "prerequest",
+            script: {
+              exec: [
+                "const ids = pm.variables.get('ids');",
+                "pm.variables.set('id', ids.shift());",
+                "if (Array.isArray(ids) && ids.length > 0) {",
+                "    pm.execution.setNextRequest('delete');",
+                "} else {",
+                "    pm.execution.setNextRequest(null);",
+                "}",
+              ],
+              type: "text/javascript",
+              packages: {},
+            },
+          },
+        ];
+      }
+      controllerItems[controllerName].item.push(item);
     }
   }
 }
