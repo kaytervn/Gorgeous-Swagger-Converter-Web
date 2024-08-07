@@ -91,8 +91,12 @@ function addControllerItems(json, baseItem, urlKey) {
             script: {
               exec: [
                 "const response = pm.response.json();",
-                "const ids = response.data.content.map(item => item.id);",
-                "pm.variables.set('ids', ids);",
+                "if (response.data.content) {",
+                "  const ids = response.data.content.map(item => item.id);",
+                "  pm.variables.set('ids', ids);",
+                "} else {",
+                "  pm.variables.set('ids', []);",
+                "}",
               ],
               type: "text/javascript",
             },
