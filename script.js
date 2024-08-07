@@ -289,13 +289,7 @@ function createRequest(json, method, path, operation, urlKey) {
 }
 
 function addQueryParams(request, parameters) {
-  const excludedNames = [
-    "offset",
-    "paged",
-    "sort.sorted",
-    "sort.unsorted",
-    "unpaged",
-  ];
+  const excludedNames = ["offset", "paged", "sort.unsorted", "unpaged"];
   const queryParams = parameters.filter(
     (p) => p.in === "query" && !excludedNames.includes(p.name)
   );
@@ -306,9 +300,17 @@ function addQueryParams(request, parameters) {
           ? "page"
           : p.name === "pageSize"
           ? "size"
+          : p.name === "sort.sorted"
+          ? "sort"
           : p.name,
       value:
-        p.name === "pageSize" ? "20" : p.type === "integer" ? "0" : `${p.type}`,
+        p.name === "sort.sorted"
+          ? "createdDate,desc"
+          : p.name === "pageSize"
+          ? "20"
+          : p.type === "integer"
+          ? "0"
+          : `${p.type}`,
     }));
     request.url.raw +=
       "?" + request.url.query.map((p) => `${p.key}=${p.value}`).join("&");
