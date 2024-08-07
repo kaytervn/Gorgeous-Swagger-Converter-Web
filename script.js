@@ -70,7 +70,7 @@ function transformJson(json) {
 }
 
 function addControllerItems(json, baseItem, urlKey) {
-  addRequestTokenItem(baseItem, urlKey);
+  addAdditionalRequestItem(baseItem, urlKey);
   const controllerItems = {};
   for (const [path, methods] of Object.entries(json.paths)) {
     for (const [method, operation] of Object.entries(methods)) {
@@ -173,7 +173,7 @@ function createBaseStructure() {
   };
 }
 
-function addRequestTokenItem(baseItem, urlKey) {
+function addAdditionalRequestItem(baseItem, urlKey) {
   baseItem.item.push({
     name: "requestToken",
     event: [
@@ -217,6 +217,58 @@ function addRequestTokenItem(baseItem, urlKey) {
       },
     },
   });
+  baseItem.item.push({
+    name: "permission",
+    item: [
+      {
+        name: "create",
+        request: {
+          method: "POST",
+          header: [
+            {
+              key: "Accept",
+              value: "application/json",
+            },
+            {
+              key: "Content-Type",
+              value: "application/json",
+            },
+          ],
+          body: {
+            mode: "raw",
+            raw: '{\n  "action": "/v1/permission/list",\n  "description": "Get permission list",\n  "isSystem": 0,\n  "name": "Get permission list",\n  "nameGroup": "Permission",\n  "permissionCode": "PE_L",\n  "showMenu": 0\n}',
+            options: {
+              raw: {
+                language: "json",
+              },
+            },
+          },
+          url: {
+            raw: `{{${urlKey}}}/v1/permission/create`,
+            host: [`{{${urlKey}}}`],
+            path: ["v1", "permission", "create"],
+          },
+        },
+      },
+      {
+        name: "list",
+        request: {
+          method: "GET",
+          header: [
+            {
+              key: "Accept",
+              value: "application/json",
+            },
+          ],
+          url: {
+            raw: `{{${urlKey}}}/v1/permission/list`,
+            host: [`{{${urlKey}}}`],
+            path: ["v1", "permission", "list"],
+          },
+        },
+      },
+    ],
+  });
 }
 
 function createRequest(json, method, path, operation, urlKey) {
@@ -255,7 +307,8 @@ function addQueryParams(request, parameters) {
           : p.name === "pageSize"
           ? "size"
           : p.name,
-      value: `<${p.type}>`,
+      value:
+        p.name === "pageSize" ? "20" : p.type === "integer" ? "0" : `${p.type}`,
     }));
     request.url.raw +=
       "?" + request.url.query.map((p) => `${p.key}=${p.value}`).join("&");
@@ -293,7 +346,12 @@ function addBodyParams(json, request, parameters) {
 
 function generateRequestBody(properties) {
   return Object.entries(properties).reduce((acc, [key, value]) => {
-    acc[key] = key === "privateKey" ? "{{privateKey}}" : `<${value.type}>`;
+    acc[key] =
+      key === "privateKey"
+        ? "{{privateKey}}"
+        : value.type === "integer" || value.type === "number"
+        ? 0
+        : `${value.type}`;
     return acc;
   }, {});
 }
