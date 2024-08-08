@@ -315,9 +315,8 @@ function addQueryParams(request, parameters) {
           : p.type === "integer"
           ? "0"
           : `${p.type}`,
+      disabled: true,
     }));
-    request.url.raw +=
-      "?" + request.url.query.map((p) => `${p.key}=${p.value}`).join("&");
   }
 }
 
