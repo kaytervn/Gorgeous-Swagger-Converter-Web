@@ -120,7 +120,3 @@ body {
 .is-invalid ~ .invalid-feedback {
   display: block;
 }
-.required::after {
-  content: " *";
-  color: red;
-}
