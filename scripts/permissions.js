@@ -1,3 +1,36 @@
+function generatePermissions(json) {
+  const permissions = [];
+  for (const [path, methods] of Object.entries(json.paths)) {
+    for (const [method, operation] of Object.entries(methods)) {
+      const controllerName = operation.tags[0].replace("-controller", "");
+      const permission = generatePermissionsBodyJson(controllerName, path, 2);
+      const excludedNames = ["autoComplete"];
+      if (!excludedNames.includes(operation.summary)) {
+        permissions.push(permission);
+      }
+    }
+  }
+  return permissions;
+}
+
+function generatePermissionsBodyJson(controllerItemName, path, prefix) {
+  const groupName = controllerItemName
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+  const permissionCode = generatePermissionCode(
+    controllerItemName,
+    path,
+    prefix
+  );
+
+  return {
+    action: path.replace("/{id}", ""),
+    name: generatePermissionName(controllerItemName, path),
+    nameGroup: groupName,
+    permissionCode: permissionCode,
+  };
+}
+
 function generatePermissionCode(controllerItemName, path, prefix) {
   const str =
     controllerItemName +
@@ -24,21 +57,20 @@ function generatePermissionName(controllerItemName, path) {
   return name;
 }
 
-function generatePermissionsBodyJson(controllerItemName, path, prefix) {
-  const groupName = controllerItemName
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-  const permissionCode = generatePermissionCode(
-    controllerItemName,
-    path,
-    prefix
-  );
-
-  return {
-    action: path.replace("/{id}", ""),
-    description: generatePermissionName(controllerItemName, path),
-    name: generatePermissionName(controllerItemName, path),
-    nameGroup: groupName,
-    permissionCode: permissionCode,
-  };
+function updatePermissionOutput(json) {
+  const selectedGroupName = groupNameSelectElement.value;
+  const prefix = parseInt(prefixSelectElement.value);
+  const permissions = generatePermissions(json)
+    .filter((p) => p.nameGroup === selectedGroupName)
+    .map((p) => {
+      const permissionCode = generatePermissionCode(
+        p.nameGroup.toLowerCase().replace(/\s+/g, "-"),
+        p.action,
+        prefix
+      );
+      return `${p.action},${p.name},${p.nameGroup},${permissionCode}`;
+    });
+  permissionOutputElement.value =
+    "action,name,group,permissionCode\n" + permissions.join("\n");
+  hljs.highlightElement(permissionOutputElement);
 }

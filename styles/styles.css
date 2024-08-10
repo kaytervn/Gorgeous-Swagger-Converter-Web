@@ -107,3 +107,20 @@ body {
     opacity: 1;
   }
 }
+.invalid-feedback {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875em;
+  color: #dc3545;
+}
+.is-invalid {
+  border-color: #dc3545;
+}
+.is-invalid ~ .invalid-feedback {
+  display: block;
+}
+.required::after {
+  content: " *";
+  color: red;
+}
