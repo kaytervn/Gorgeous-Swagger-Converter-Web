@@ -11,8 +11,17 @@ const inputNameElement = document.getElementById("inputName");
 const inputLocalUrlElement = document.getElementById("inputLocalUrl");
 const inputRemoteUrlElement = document.getElementById("inputRemoteUrl");
 const inputPrivateKeyElement = document.getElementById("inputPrivateKey");
+const checkLocalUrlElement = document.getElementById("enableLocalUrl");
+const checkRemoteUrlElement = document.getElementById("enableRemoteUrl");
+const prefixSelectElement = document.getElementById("prefixSelect");
+const groupNameSelectElement = document.getElementById("groupNameSelect");
+const permissionOutputElement = document.getElementById("permissionOutput");
 
 function convertJson() {
+  if (!checkLocalUrlElement.checked && !checkRemoteUrlElement.checked) {
+    showFloatingAlert("Please choose at least one URL option.");
+    return;
+  }
   const inputJson = inputJsonElement.value;
   try {
     const parsedJson = JSON.parse(inputJson);
@@ -20,6 +29,10 @@ function convertJson() {
     outputJsonElement.textContent = JSON.stringify(convertedJson, null, 2);
     hljs.highlightElement(outputJsonElement);
     outputBlockElement.style.display = "block";
+    const permissions = generatePermissions(parsedJson);
+    populateGroupNames(permissions);
+    localStorage.setItem("checkLocalUrl", checkLocalUrlElement.checked);
+    localStorage.setItem("checkRemoteUrl", checkRemoteUrlElement.checked);
     localStorage.setItem("collectionName", inputNameElement.value);
     localStorage.setItem("localUrl", inputLocalUrlElement.value);
     localStorage.setItem("remoteUrl", inputRemoteUrlElement.value);
@@ -27,6 +40,46 @@ function convertJson() {
   } catch (error) {
     showFloatingAlert(error.message);
   }
+}
+
+function generatePermissions(json) {
+  const permissions = [];
+  for (const [path, methods] of Object.entries(json.paths)) {
+    for (const [method, operation] of Object.entries(methods)) {
+      const controllerName = operation.tags[0].replace("-controller", "");
+      const permission = generatePermissionsBodyJson(controllerName, path, 2);
+      permissions.push(permission);
+    }
+  }
+  return permissions;
+}
+
+function populateGroupNames(permissions) {
+  const groupNames = [...new Set(permissions.map((p) => p.nameGroup))];
+  groupNameSelectElement.innerHTML = groupNames
+    .map((name) => `<option value="${name}">${name}</option>`)
+    .join("");
+  updatePermissionOutput();
+}
+
+function updatePermissionOutput() {
+  const selectedGroupName = groupNameSelectElement.value;
+  const prefix = parseInt(prefixSelectElement.value);
+  const parsedJson = JSON.parse(inputJsonElement.value);
+  const permissions = generatePermissions(parsedJson)
+    .filter((p) => p.nameGroup === selectedGroupName)
+    .map((p) => {
+      const permissionCode = generatePermissionCode(
+        p.nameGroup.toLowerCase().replace(/\s+/g, "-"),
+        p.action,
+        prefix
+      );
+      return `${p.action},${p.name},${p.description},${p.nameGroup},${permissionCode}`;
+    });
+
+  permissionOutputElement.value =
+    "action,name,description,nameGroup,permissionCode\n" +
+    permissions.join("\n");
 }
 
 function showFloatingAlert(message) {
@@ -66,6 +119,12 @@ function transformJson(json) {
   const remoteItem = output.item[1];
   addControllerItems(json, localItem, "localUrl");
   addControllerItems(json, remoteItem, "remoteUrl");
+  if (!checkLocalUrlElement.checked) {
+    output.item.splice(0, 1);
+  }
+  if (!checkRemoteUrlElement.checked) {
+    output.item.splice(1, 1);
+  }
   return output;
 }
 
@@ -79,7 +138,13 @@ function addControllerItems(json, baseItem, urlKey) {
         controllerItems[controllerName] = { name: controllerName, item: [] };
         baseItem.item.push(controllerItems[controllerName]);
       }
-      const request = createRequest(json, method, path, operation, urlKey);
+      const request = createRequest(
+        json,
+        method,
+        path.replace("{id}", "0"),
+        operation,
+        urlKey
+      );
       const item = {
         name: operation.summary,
         request,
@@ -103,7 +168,7 @@ function addControllerItems(json, baseItem, urlKey) {
           },
         ];
       }
-      if (operation.summary === "delete") {
+      if (method.toUpperCase != "GET") {
         item.event = [
           {
             listen: "prerequest",
@@ -112,7 +177,7 @@ function addControllerItems(json, baseItem, urlKey) {
                 "const ids = pm.variables.get('ids');",
                 "pm.variables.set('id', ids.shift());",
                 "if (Array.isArray(ids) && ids.length > 0) {",
-                "    pm.execution.setNextRequest('delete');",
+                `    pm.execution.setNextRequest('${operation.summary}');`,
                 "} else {",
                 "    pm.execution.setNextRequest(null);",
                 "}",
@@ -130,7 +195,7 @@ function addControllerItems(json, baseItem, urlKey) {
 
 function getCurrentDate() {
   const now = new Date();
-  return now
+  const formatter = now
     .toLocaleString("en-GB", {
       day: "2-digit",
       month: "2-digit",
@@ -140,6 +205,7 @@ function getCurrentDate() {
       second: "2-digit",
     })
     .replace(/\//g, "/");
+  return formatter.replace(",", "");
 }
 
 function createBaseStructure() {
@@ -240,7 +306,7 @@ function addAdditionalRequestItem(baseItem, urlKey) {
           ],
           body: {
             mode: "raw",
-            raw: '{\n  "action": "/v1/permission/list",\n  "description": "Get permission list",\n  "isSystem": 0,\n  "name": "Get permission list",\n  "nameGroup": "Permission",\n  "permissionCode": "PE_L",\n  "showMenu": 0\n}',
+            raw: '{\n  "action": "{{action}}",\n  "description": "{{description}}",\n  "isSystem": 0,\n  "name": "{{name}}",\n  "nameGroup": "{{group}}",\n  "permissionCode": "{{permissionCode}}",\n  "showMenu": 0\n}',
             options: {
               raw: {
                 language: "json",
@@ -256,6 +322,24 @@ function addAdditionalRequestItem(baseItem, urlKey) {
       },
       {
         name: "list",
+        event: [
+          {
+            listen: "test",
+            script: {
+              exec: [
+                "const response = pm.response.json();",
+                "if (response.data) {",
+                "  const ids = response.data.map(item => item.id);",
+                "  pm.variables.set('ids', ids);",
+                "} else {",
+                "  pm.variables.set('ids', []);",
+                "}",
+              ],
+              type: "text/javascript",
+              packages: {},
+            },
+          },
+        ],
         request: {
           method: "GET",
           header: [
@@ -314,6 +398,8 @@ function addQueryParams(request, parameters) {
           ? "20"
           : p.type === "integer"
           ? "0"
+          : p.format === "date-time"
+          ? getCurrentDate()
           : `${p.type}`,
       disabled: true,
     }));
@@ -352,10 +438,16 @@ function addBodyParams(json, request, parameters) {
 function generateRequestBody(properties) {
   return Object.entries(properties).reduce((acc, [key, value]) => {
     acc[key] =
-      key === "privateKey"
+      key === "permissions"
+        ? "{{ids}}"
+        : key === "privateKey"
         ? "{{privateKey}}"
+        : value.format === "date-time"
+        ? getCurrentDate()
         : value.type === "integer" || value.type === "number"
         ? 0
+        : value.type === "array"
+        ? []
         : `${value.type}`;
     return acc;
   }, {});
@@ -364,8 +456,21 @@ function generateRequestBody(properties) {
 document.addEventListener("DOMContentLoaded", () => {
   hljs.highlightAll();
 });
+checkLocalUrlElement.checked = localStorage.getItem("checkLocalUrl") === "true";
+checkRemoteUrlElement.checked =
+  localStorage.getItem("checkRemoteUrl") === "true";
+checkRemoteUrlElement.addEventListener("change", function () {
+  inputRemoteUrlElement.disabled = !this.checked;
+});
+checkLocalUrlElement.addEventListener("change", function () {
+  inputLocalUrlElement.disabled = !this.checked;
+});
 copyButton.addEventListener("click", copyOutput);
 inputNameElement.value = localStorage.getItem("collectionName");
 inputLocalUrlElement.value = localStorage.getItem("localUrl");
 inputRemoteUrlElement.value = localStorage.getItem("remoteUrl");
 inputPrivateKeyElement.value = localStorage.getItem("privateKey");
+inputLocalUrlElement.disabled = !checkLocalUrlElement.checked;
+inputRemoteUrlElement.disabled = !checkRemoteUrlElement.checked;
+prefixSelectElement.addEventListener("change", updatePermissionOutput);
+groupNameSelectElement.addEventListener("change", updatePermissionOutput);
