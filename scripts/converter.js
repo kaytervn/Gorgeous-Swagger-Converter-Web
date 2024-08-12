@@ -30,7 +30,26 @@ function createBaseStructure() {
       bearer: [{ key: "token", value: "{{accessToken}}", type: "string" }],
     },
     event: [
-      { listen: "prerequest", script: { type: "text/javascript", exec: [""] } },
+      {
+        listen: "prerequest",
+        script: {
+          type: "text/javascript",
+          exec: [
+            "function formatDate(date) {",
+            "    const day = String(date.getDate()).padStart(2, '0');",
+            "    const month = String(date.getMonth() + 1).padStart(2, '0');",
+            "    const year = date.getFullYear();",
+            "    const hours = String(date.getHours()).padStart(2, '0');",
+            "    const minutes = String(date.getMinutes()).padStart(2, '0');",
+            "    const seconds = String(date.getSeconds()).padStart(2, '0');",
+            "    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;",
+            "}",
+            "const currentDate = new Date();",
+            "const formattedDate = formatDate(currentDate);",
+            "pm.collectionVariables.set('currentDate', formattedDate);",
+          ],
+        },
+      },
       { listen: "test", script: { type: "text/javascript", exec: [""] } },
     ],
     variable: [
@@ -39,6 +58,7 @@ function createBaseStructure() {
       { key: "clientId", value: "abc_client", type: "string" },
       { key: "clientSecret", value: "abc123", type: "string" },
       { key: "accessToken", value: "", type: "string" },
+      { key: "currentDate", value: `${getCurrentDate}`, type: "string" },
       { key: "privateKey", value: privateKey, type: "string" },
     ],
     item: [
