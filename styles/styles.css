@@ -17,7 +17,7 @@ body {
   border-color: #2e59d9;
 }
 #outputContainer {
-  height: 300px;
+  height: 368px;
   overflow-y: auto;
   background-color: #f8f9fa;
   border-radius: 5px;
@@ -119,4 +119,36 @@ body {
 }
 .is-invalid ~ .invalid-feedback {
   display: block;
+}
+.csv-output {
+  font-family: "Consolas", "Monaco", "Andale Mono", "Ubuntu Mono", monospace;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  background-color: #fff;
+  overflow-x: auto;
+  overflow-y: auto;
+  height: 250px;
+}
+.csv-row {
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+.highlight {
+  display: inline-block;
+  padding: 2px 2px;
+  margin: 2px;
+  border-radius: 3px;
+}
+.highlight:nth-of-type(4n + 1) {
+  background-color: #ffdddd;
+}
+.highlight:nth-of-type(4n + 2) {
+  background-color: #ddffdd;
+}
+.highlight:nth-of-type(4n + 3) {
+  background-color: #ddddff;
+}
+.highlight:nth-of-type(4n) {
+  background-color: #ffffdd;
 }

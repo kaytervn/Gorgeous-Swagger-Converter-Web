@@ -22,9 +22,8 @@ function generatePermissionsBodyJson(controllerItemName, path, prefix) {
     path,
     prefix
   );
-
   return {
-    action: path.replace("/{id}", ""),
+    action: path.replace("/{id}", "").replace("/{folder}/{fileName}", ""),
     name: generatePermissionName(controllerItemName, path),
     nameGroup: groupName,
     permissionCode: permissionCode,
@@ -35,7 +34,12 @@ function generatePermissionCode(controllerItemName, path, prefix) {
   const str =
     controllerItemName +
     "-" +
-    path.replace("/{id}", "").split("/").at(-1).replace("get", "view");
+    path
+      .replace("/{id}", "")
+      .replace("/{folder}/{fileName}", "")
+      .split("/")
+      .at(-1)
+      .replace("get", "view");
   const words = str.split("-");
   const formatted = words.map((word, index) => {
     if (index === 0) {
@@ -49,7 +53,12 @@ function generatePermissionCode(controllerItemName, path, prefix) {
 
 function generatePermissionName(controllerItemName, path) {
   const str =
-    path.replace("/{id}", "").split("/").at(-1).replace("list", "get-list") +
+    path
+      .replace("/{id}", "")
+      .replace("/{folder}/{fileName}", "")
+      .split("/")
+      .at(-1)
+      .replace("list", "get-list") +
     "-" +
     controllerItemName;
   let name = str.replace(/-/g, " ");
@@ -70,7 +79,31 @@ function updatePermissionOutput(json) {
       );
       return `${p.action},${p.name},${p.nameGroup},${permissionCode}`;
     });
-  permissionOutputElement.value =
-    "action,name,group,permissionCode\n" + permissions.join("\n");
-  hljs.highlightElement(permissionOutputElement);
+  processCSV("action,name,group,permissionCode\n" + permissions.join("\n"));
+}
+
+function processCSV(input) {
+  const output = document.getElementById("permissionOutput");
+  const rows = input.split("\n");
+  let html = "";
+  rows.forEach((row) => {
+    if (row.trim()) {
+      html += '<div class="csv-row">';
+      const cells = row.split(",");
+      cells.forEach((cell, index) => {
+        html += `<span class="highlight">${escapeHTML(cell.trim())}</span>`;
+        if (index < cells.length - 1) {
+          html += ",";
+        }
+      });
+      html += "</div>";
+    }
+  });
+  output.innerHTML = html;
+}
+
+function escapeHTML(text) {
+  const element = document.createElement("div");
+  element.innerText = text;
+  return element.innerHTML;
 }
