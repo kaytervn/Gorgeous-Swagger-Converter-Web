@@ -85,10 +85,9 @@ function updatePermissionOutput(json) {
 function processCSV(input) {
   const output = document.getElementById("permissionOutput");
   const rows = input.split("\n");
-  let html = "";
+  let html = "<pre>";
   rows.forEach((row) => {
     if (row.trim()) {
-      html += '<div class="csv-row">';
       const cells = row.split(",");
       cells.forEach((cell, index) => {
         html += `<span class="highlight">${escapeHTML(cell.trim())}</span>`;
@@ -96,9 +95,10 @@ function processCSV(input) {
           html += ",";
         }
       });
-      html += "</div>";
+      html += "\n";
     }
   });
+  html += "</pre>";
   output.innerHTML = html;
 }
 
