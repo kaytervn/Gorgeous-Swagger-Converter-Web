@@ -182,13 +182,10 @@ function addAdditionalRequestItem(baseItem, urlKey) {
                 "const response = pm.response.json();",
                 "if (response.data) {",
                 "  const ids = response.data.map(item => item.id);",
-                "  pm.variables.set('ids', ids);",
-                "} else {",
-                "  pm.variables.set('ids', []);",
+                "  pm.collectionVariables.set('permissions', JSON.stringify(ids));",
                 "}",
               ],
               type: "text/javascript",
-              packages: {},
             },
           },
         ],
@@ -325,20 +322,7 @@ function addEventScripts(item, controllerName, operation, method) {
   }
   if (controllerName === "group" && operation.summary === "update") {
     item.request.body.raw =
-      '{\n  "description": "Role for super admin",\n  "id": 15,\n  "name": "ROLE SUPPER ADMIN",\n  "permissions": {{ids}}\n}';
-    item.event = [
-      {
-        listen: "prerequest",
-        script: {
-          exec: [
-            "const ids = pm.variables.get('ids');",
-            "pm.variables.set('ids', ids);",
-          ],
-          type: "text/javascript",
-          packages: {},
-        },
-      },
-    ];
+      '{\n  "description": "Role for super admin",\n  "id": 15,\n  "name": "ROLE SUPPER ADMIN",\n  "permissions": {{permissions}}\n}';
   } else if (method.toUpperCase() !== "GET") {
     item.event = [
       {
@@ -354,7 +338,6 @@ function addEventScripts(item, controllerName, operation, method) {
             "}",
           ],
           type: "text/javascript",
-          packages: {},
         },
       },
     ];
