@@ -308,7 +308,7 @@ function addEventScripts(item, controllerName, operation, method) {
         script: {
           exec: [
             "const response = pm.response.json();",
-            "if (response.data.content) {",
+            "if (response.data?.content) {",
             "  const ids = response.data.content.map(item => item.id);",
             "  pm.variables.set('ids', ids);",
             "} else {",
