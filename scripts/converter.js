@@ -291,6 +291,8 @@ function generateRequestBody(properties) {
         ? "{{privateKey}}"
         : value.format === "date-time"
         ? getCurrentDate()
+        : value.type === "boolean"
+        ? true
         : value.type === "integer" || value.type === "number"
         ? 0
         : value.type === "array"
