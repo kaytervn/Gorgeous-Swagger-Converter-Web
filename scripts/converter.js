@@ -81,7 +81,7 @@ function addControllerItems(json, baseItem, urlKey) {
       const request = createRequest(
         json,
         method,
-        path.replace("{id}", "0"),
+        path.replace("{id}", "6969696969696969"),
         operation,
         urlKey
       );
