@@ -20,7 +20,7 @@ function createBaseStructure() {
   const privateKey = inputPrivateKeyElement.value;
   return {
     info: {
-      name: `${collectionName} [${getCurrentDate()}]`,
+      name: `[${getCurrentDate()}] ${collectionName}`,
       description: "API Documentation",
       schema:
         "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
