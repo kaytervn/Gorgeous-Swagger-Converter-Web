@@ -103,7 +103,7 @@ function addAdditionalRequestItem(baseItem, urlKey) {
         listen: "test",
         script: {
           exec: [
-            'if (pm.response.json().access_token) { pm.collectionVariables.set("accessToken", pm.response.json().access_token); }',
+            'if (pm.response.json()?.access_token) { pm.collectionVariables.set("accessToken", pm.response.json().access_token); }',
           ],
           type: "text/javascript",
         },
