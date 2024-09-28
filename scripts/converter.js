@@ -245,7 +245,9 @@ function addQueryParams(request, parameters) {
           ? "createdDate,desc"
           : p.name === "pageSize"
           ? "20"
-          : p.type === "integer"
+          : p.format === "int64"
+          ? "6969696969696969"
+          : p.format === "int32"
           ? "0"
           : p.format === "date-time"
           ? getCurrentDate()
@@ -259,14 +261,21 @@ function addBodyParams(json, request, parameters) {
   const bodyParam = parameters.find((p) => p.in === "body");
   if (bodyParam) {
     request.header.push({ key: "Content-Type", value: "application/json" });
-    const schemaName = bodyParam.schema.$ref.split("/").pop();
+    const schemaType =
+      bodyParam.schema.type === "array"
+        ? bodyParam.schema.items.$ref
+        : bodyParam.schema.$ref;
+    const schemaName = schemaType.split("/").pop();
+    const generatedBody = generateRequestBody(
+      json.definitions[schemaName].properties
+    );
+    const requestBody =
+      bodyParam.schema.type === "array"
+        ? [generatedBody, generatedBody]
+        : generatedBody;
     request.body = {
       mode: "raw",
-      raw: JSON.stringify(
-        generateRequestBody(json.definitions[schemaName].properties),
-        null,
-        2
-      ),
+      raw: JSON.stringify(requestBody, null, 2),
       options: { raw: { language: "json" } },
     };
   }
@@ -293,7 +302,9 @@ function generateRequestBody(properties) {
         ? getCurrentDate()
         : value.type === "boolean"
         ? true
-        : value.type === "integer" || value.type === "number"
+        : value.format === "int64"
+        ? 6969696969696969
+        : value.format === "int32"
         ? 0
         : value.type === "array"
         ? []
