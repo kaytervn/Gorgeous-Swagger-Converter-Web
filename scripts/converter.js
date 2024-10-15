@@ -21,7 +21,7 @@ function createBaseStructure() {
   return {
     info: {
       name: `${collectionName} [${getCurrentDate()}]`,
-      description: "API Documentation",
+      description: `API Documentation For ${collectionName}`,
       schema:
         "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     },
